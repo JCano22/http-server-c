@@ -7,3 +7,14 @@
 #include <netinet/in.h> // struct sockaddr_in, INADDR_ANY
 #include <sys/socket.h> // socket, bind, listen, accept
 #include <sys/types.h>  // basic system data types
+
+int main(void)
+{
+    /*Minimal program skeleton:
+     * - prints a startup message so we can see it ran
+     * - returns a controlled exit code
+     */
+
+     printf("server: starting(no networking yet) \n");
+     return EXIT_SUCCESS;
+}
