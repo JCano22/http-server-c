@@ -45,7 +45,7 @@ At this stage, the server communicates using **raw TCP**, not HTTP.
 - [x] Development environment verified  
 - [x] Server socket creation implemented  
 - [x] Address configuration completed  
-- [ ] Listening for connections  
+- [x] Listening for connections  
 - [ ] Accepting clients  
 - [ ] Sending and receiving data  
 - [ ] HTTP support (later stage)
