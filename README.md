@@ -110,4 +110,26 @@ If the call fails, it returns -1, which indicates that the socket could not be c
 
 This step is required because all later server operations — binding to a port, listening for connections, and accepting clients — operate on this socket. Without it, no network communication is possible.
 
+### 3) Configure the Server Address
+
+This step defines **where** the server will listen for incoming connections.
+
+The server address is stored in a `sockaddr_in` structure, which holds all information the operating system needs to identify the network endpoint.
+
+The address configuration includes three main components:
+
+- The address family, which specifies IPv4 networking.
+- The port number, which identifies the service on the machine.
+- The IP address, which specifies which network interface(s) the server will accept connections on.
+
+The port number must be converted from host byte order to network byte order using `htons()`. This ensures the value is interpreted correctly across different systems.
+
+The IP address is commonly set to `INADDR_ANY`, which allows the server to accept connections on any available network interface (such as localhost, Ethernet, or Wi-Fi).
+
+This step does not make the server visible on the network by itself.  
+It only prepares the address information that will be used by `bind()` in the next step.
+
+Without a correctly configured address structure, the socket cannot be bound to a port, and the server cannot receive incoming connections.
+
+
 ***project in progress...more info to come***
