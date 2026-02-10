@@ -77,6 +77,62 @@ int main(void)
         return EXIT_FAILURE;
     }
 
+    /*=================================================================================*/
+
+    /* Accept a single incoming client connection. */
+    struct sockaddr_in client_addr;
+    socklen_t client_len = sizeof(client_addr);
+
+    int client_fd = accept(server_fd,
+                       (struct sockaddr *)&client_addr,
+                       &client_len);
+
+    if (client_fd < 0) {
+        perror("accept");
+        close(server_fd);
+        return EXIT_FAILURE;
+    }
+
+    /* Read the client's HTTP request (we'll just grab the first chunk). */
+    char req_buf[4096];
+    ssize_t nread = read(client_fd, req_buf, sizeof(req_buf) - 1);
+    if (nread < 0) {
+        perror("read");
+        close(client_fd);
+        close(server_fd);
+        return EXIT_FAILURE;
+    }
+
+    /*=================================================================================*/
+
+    /* Read HTTP request and send minimal HTTP response */
+
+    /* Null-terminate so we can safely treat it like a C string for printing. */
+    req_buf[nread] = '\0';
+
+    /* Print what we received (for learning/debugging). */
+    printf("----- HTTP request start -----\n");
+    printf("%s", req_buf);
+    printf("------ HTTP request end ------\n");
+
+    /* Send a minimal valid HTTP/1.1 response with a small body. */
+    const char *body = "It works!\n";
+    const char *hdr =
+        "HTTP/1.1 200 OK\r\n"
+        "Content-Type: text/plain; charset=utf-8\r\n"
+        "Content-Length: 10\r\n"
+        "Connection: close\r\n"
+        "\r\n";
+
+    /* Write headers, then body. */
+    if (write(client_fd, hdr, strlen(hdr)) < 0) {
+        perror("write(headers)");
+    }
+    if (write(client_fd, body, strlen(body)) < 0) {
+        perror("write(body)");
+    }
+
+    /*=================================================================================*/
 
     return EXIT_SUCCESS;
 }
