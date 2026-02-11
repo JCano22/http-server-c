@@ -10,18 +10,15 @@
 
 int main(void)
 {
-    /*Minimal program skeleton:
-     * - prints a startup message so we can see it ran
-     * - returns a controlled exit code
-     */
-
      printf("server: starting(no networking yet) \n");
 
      /* Create a TCP socket (IPv4)*/
      // AF_INET = IPv4
      //SOCK_STREAM = TCP/reliable byte sttream
 
-     int server_fd = socket(AF_INET, SOCK_STREAM, 0);
+     int server_fd = socket(AF_INET, SOCK_STREAM, 0); //creating socket, saying we want address family -> IPv4, and stating we want TCP
+
+     //if socket() fails, it returns -1
      if(server_fd < 0)
      {
         perror("socket");
@@ -33,6 +30,8 @@ int main(void)
      /* Set SO_REUSEADDR so we can restart the server quickly after it exits. */
      //setsockop = set socket options
      //SOL_SOCKET = specifying socket level
+     //SO_REUSEADDR = Allow the socket to reuse the address/port even if it is in TIME_WAIT
+     //optval controls whether SO_REUSEADDR is enabled (1 = ON, 0 = OFF)
      
      int optval = 1;
      if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) < 0) 
