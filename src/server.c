@@ -69,6 +69,10 @@ int main(void)
 
     /*=================================================================================*/
     /* Mark the socket as a listening socket (ready to accept connections). */
+    /*Returns 0 on success, -1 on error*/
+    /*The 16 is the backlog, controls the connections queue size -- "allow this # of connection requests to wait in line before I accept them"*/
+    /* When listen() runs successfully it marks the socket as "listening", creates internal connection queues, starts handling TCP SYN packets, completes TCP handshakes in kernel space*/
+    /* listen() turns a bound TCP socket into a server socket*/
 
     if (listen(server_fd, 16) < 0) {
         perror("listen");
@@ -77,8 +81,8 @@ int main(void)
     }
 
     /*=================================================================================*/
-
     /* Accept a single incoming client connection. */
+    
     struct sockaddr_in client_addr;
     socklen_t client_len = sizeof(client_addr);
 
