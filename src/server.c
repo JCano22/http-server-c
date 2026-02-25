@@ -84,8 +84,8 @@ int main(void)
     /*=================================================================================*/
 /* Main server loop: accept and handle clients forever */
 
-    for (;;) {
-
+    for (;;) 
+    {
         struct sockaddr_in client_addr;
         socklen_t client_len = sizeof(client_addr);
 
