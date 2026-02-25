@@ -137,5 +137,11 @@ int main(void)
 
     /*=================================================================================*/
 
+    /* Close the client connection (we told them Connection: close). */
+    close(client_fd);
+
+    /* Close the listening socket (we're exiting this minimal one-shot server). */
+    close(server_fd);
+
     return EXIT_SUCCESS;
 }
