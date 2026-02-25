@@ -7,6 +7,7 @@
 #include <netinet/in.h> // struct sockaddr_in, INADDR_ANY
 #include <sys/socket.h> // socket, bind, listen, accept
 #include <sys/types.h>  // basic system data types
+#include <fcntl.h>
 
 int main(void)
 {
@@ -81,67 +82,67 @@ int main(void)
     }
 
     /*=================================================================================*/
-    /* Accept a single incoming client connection. */
-    
-    struct sockaddr_in client_addr;
-    socklen_t client_len = sizeof(client_addr);
+/* Main server loop: accept and handle clients forever */
 
-    int client_fd = accept(server_fd,
-                       (struct sockaddr *)&client_addr,
-                       &client_len);
+    for (;;) {
 
-    if (client_fd < 0) {
-        perror("accept");
-        close(server_fd);
-        return EXIT_FAILURE;
-    }
+        struct sockaddr_in client_addr;
+        socklen_t client_len = sizeof(client_addr);
 
-    /* Read the client's HTTP request (we'll just grab the first chunk). */
-    char req_buf[4096];
-    ssize_t nread = read(client_fd, req_buf, sizeof(req_buf) - 1);
-    if (nread < 0) {
-        perror("read");
+        int client_fd = accept(server_fd,
+                            (struct sockaddr *)&client_addr,
+                            &client_len);
+
+        if (client_fd < 0) {
+            perror("accept");
+            continue;   // don't exit the server, just try again
+        }
+
+        /* Read the client's HTTP request */
+        char req_buf[4096];
+        ssize_t nread = read(client_fd, req_buf, sizeof(req_buf) - 1);
+        if (nread < 0) {
+            perror("read");
+            close(client_fd);
+            continue;
+        }
+
+        req_buf[nread] = '\0';
+
+        printf("----- HTTP request start -----\n");
+        printf("%s", req_buf);
+        printf("------ HTTP request end ------\n");
+
+        /* Serve www/index.html */
+        int file_fd = open("www/index.html", O_RDONLY);
+        if (file_fd < 0) {
+            perror("open(index.html)");
+            close(client_fd);
+            continue;
+        }
+
+        char file_buf[8192];
+        ssize_t file_size = read(file_fd, file_buf, sizeof(file_buf));
+        close(file_fd);
+
+        if (file_size < 0) {
+            perror("read(index.html)");
+            close(client_fd);
+            continue;
+        }
+
+        char header_buf[256];
+        int header_len = snprintf(header_buf, sizeof(header_buf),
+                                "HTTP/1.1 200 OK\r\n"
+                                "Content-Type: text/html; charset=utf-8\r\n"
+                                "Content-Length: %zd\r\n"
+                                "Connection: close\r\n"
+                                "\r\n",
+                                file_size);
+
+        write(client_fd, header_buf, header_len);
+        write(client_fd, file_buf, file_size);
+
         close(client_fd);
-        close(server_fd);
-        return EXIT_FAILURE;
     }
-
-    /*=================================================================================*/
-
-    /* Read HTTP request and send minimal HTTP response */
-
-    /* Null-terminate so we can safely treat it like a C string for printing. */
-    req_buf[nread] = '\0';
-
-    /* Print what we received (for learning/debugging). */
-    printf("----- HTTP request start -----\n");
-    printf("%s", req_buf);
-    printf("------ HTTP request end ------\n");
-
-    /* Send a minimal valid HTTP/1.1 response with a small body. */
-    const char *body = "It works!\n";
-    const char *hdr =
-        "HTTP/1.1 200 OK\r\n"
-        "Content-Type: text/plain; charset=utf-8\r\n"
-        "Content-Length: 10\r\n"
-        "Connection: close\r\n"
-        "\r\n";
-
-    /* Write headers, then body. */
-    if (write(client_fd, hdr, strlen(hdr)) < 0) {
-        perror("write(headers)");
-    }
-    if (write(client_fd, body, strlen(body)) < 0) {
-        perror("write(body)");
-    }
-
-    /*=================================================================================*/
-
-    /* Close the client connection (we told them Connection: close). */
-    close(client_fd);
-
-    /* Close the listening socket (we're exiting this minimal one-shot server). */
-    close(server_fd);
-
-    return EXIT_SUCCESS;
 }
