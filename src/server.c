@@ -82,7 +82,7 @@ int main(void)
     }
 
     /*=================================================================================*/
-/* Main server loop: accept and handle clients forever */
+    /* Main server loop: accept and handle clients forever */
 
     for (;;) 
     {
@@ -117,7 +117,7 @@ int main(void)
         int file_fd = open("www/index.html", O_RDONLY);
         if (file_fd < 0) {
             perror("open(index.html)");
-            close(client_fd);
+            close(client_fd); 
             continue;
         }
 
@@ -125,7 +125,8 @@ int main(void)
         ssize_t file_size = read(file_fd, file_buf, sizeof(file_buf));
         close(file_fd);
 
-        if (file_size < 0) {
+        if (file_size < 0) 
+        {
             perror("read(index.html)");
             close(client_fd);
             continue;
